@@ -8,10 +8,18 @@ import {DeployFundMe} from "../script/DefaultFundMe.s.sol";
 
 contract FundMeTest is Test {
     FundMe fundme;
+    address  USER = makeAddr("user");
+    uint256 constant SEND_VALUE = 1 ether;
+    uint256 constant STARTING_BALANCE = 10000 ether;
+
+
     function setUp() external {
         //fundme = new FundMe(0x694AA1769357215DE4FAC081bf1f309aDC325306);   
         DeployFundMe deployFundMe = new DeployFundMe();
         fundme = deployFundMe.run();
+        vm.deal(USER, STARTING_BALANCE);
+        require(address(fundme) != address(0), "FundMe deployment failed");
+
 
     }
 
@@ -38,7 +46,10 @@ contract FundMeTest is Test {
 
     function testFundUpdatesFundeDataStructure()public{
 
-                fundme.fund{value:10e18}();
+                vm.prank(USER);
+                fundme.fund{value:SEND_VALUE}();
+                uint256 amountFunded = fundme.getAddressToAmountFunded(USER);
+                assertEq(amountFunded, SEND_VALUE);
 
 
     }
