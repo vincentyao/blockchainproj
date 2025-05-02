@@ -2,6 +2,7 @@
 pragma solidity ^0.8.18;
 import {Script} from "forge-std/Script.sol";
 import {MockV3Aggregator} from "../test/Mocks/MockV3Aggregator.sol";
+import {console} from "forge-std/console.sol";
 
 contract HelperConfig is Script {
 
@@ -46,6 +47,9 @@ contract HelperConfig is Script {
         vm.startBroadcast();
         MockV3Aggregator mockV3Aggregator = new MockV3Aggregator(DECIMALS, INITIAL_PRICE);
         vm.stopBroadcast();
+
+        console.log("MockV3Aggregator address:", address(mockV3Aggregator));
+
 
         NetworkConfig memory anvilConfig = NetworkConfig({
             priceFeed: address( mockV3Aggregator)

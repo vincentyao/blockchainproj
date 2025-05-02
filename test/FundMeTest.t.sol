@@ -50,8 +50,42 @@ contract FundMeTest is Test {
                 fundme.fund{value:SEND_VALUE}();
                 uint256 amountFunded = fundme.getAddressToAmountFunded(USER);
                 assertEq(amountFunded, SEND_VALUE);
+                }
+                
 
+    function testAddsFunderToArrayofFunds() public {
+            vm.prank(USER);
+            fundme.fund{value:SEND_VALUE}();
+            address funder = fundme.getFunder(0);
+            assertEq(funder, USER);
+    }
 
+    modifier funded() {
+        vm.prank(USER);
+        fundme.fund{value:SEND_VALUE}();
+        _;
+        
+    }
+
+    function testOnlyOwnerCanWithdraw() public funded {
+        //vm.prank(USER);
+        console.log("FundMe contract owner address:", fundme.i_owner());
+
+        vm.expectRevert();
+
+        fundme.withdraw();
+    }
+
+    function testWithdrawWithASingleFunder() public funded {
+        uint256 startingOwnerBalance = fundme.getOwner().balance;
+        uint256  startingFundMeBalance =  address(fundme).balance;
+        vm.prank(fundme.getOwner());
+        fundme.withdraw();
+        uint256 endingOwnerBalance = fundme.getOwner().balance;
+        uint256 endingFundMeBalance = address(fundme).balance;
+
+        assertEq(endingFundMeBalance, 0);
+        assertEq(endingOwnerBalance, startingOwnerBalance + startingFundMeBalance);
     }
 
     
