@@ -1,5 +1,1 @@
-FundMeTest:testFundFailsWithoutEnoughETH() (gas: 25108)
-FundMeTest:testFundUpdatesFundeDataStructure() (gas: 95510)
-FundMeTest:testOwnerIsMsgSender() (gas: 16146)
-FundMeTest:testVersion() (gas: 17386)
-FundMeTest:testdemo() (gas: 8883)
+FundMeTest:testWithdrawWithASingleFunder() (gas: 94202)
