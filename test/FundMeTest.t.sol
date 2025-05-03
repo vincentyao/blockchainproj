@@ -82,14 +82,9 @@ contract FundMeTest is Test {
         uint256 startingOwnerBalance = fundme.getOwner().balance;
         uint256  startingFundMeBalance =  address(fundme).balance;
 
-        uint256 gasStart = gasleft();
-        vm.txGasPrice(GAS_PRICE);
+        
         vm.prank(fundme.getOwner());
         fundme.withdraw();
-
-        uint256 gasEnd = gasleft();
-        uint256 gasUsed = (gasStart - gasEnd) * tx.gasprice;
-        console.log("Gas used for withdraw:", gasUsed);
 
         uint256 endingOwnerBalance = fundme.getOwner().balance;
         uint256 endingFundMeBalance = address(fundme).balance;  
@@ -117,6 +112,28 @@ contract FundMeTest is Test {
         assert(startingFundMeBalance+startingOwnerBalance == fundme.getOwner().balance);
         
     }
+
+    function testWithdrawWithMultipleFundersCheaper() public funded {
+        uint160 numberoffFunders = 10;
+        uint160 startingFunderIndex = 1;
+        for (uint160 i = startingFunderIndex; i <= numberoffFunders; i++) {
+            hoax(address(i), SEND_VALUE);
+            fundme.fund{value: SEND_VALUE}();
+
+        }
+
+        uint256 startingOwnerBalance = fundme.getOwner().balance;
+        uint256 startingFundMeBalance = address(fundme).balance;
+
+        vm.startPrank(fundme.getOwner());
+        fundme.cheaperWithdraw();
+        vm.stopPrank();
+
+        assert(address(fundme).balance == 0);
+        assert(startingFundMeBalance+startingOwnerBalance == fundme.getOwner().balance);
+        
+    }
+
 
     
 
