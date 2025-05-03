@@ -27,10 +27,16 @@ jobs:
         run: |
           forge --version
 
-      - name: Run Forge fmt
+      - name: Run Forge fmt (check formatting)
         run: |
-          forge fmt --check
+          forge fmt --check || (echo "Formatting issues found! Run 'forge fmt' locally to fix them." && exit 1)
         id: fmt
+
+      - name: Run Forge fmt (fix formatting, optional)
+        if: ${{ failure() && github.event_name == 'workflow_dispatch' }}
+        run: |
+          forge fmt
+          echo "Formatting issues were automatically fixed by 'forge fmt'. Please review and commit the changes."
 
       - name: Run Forge build
         run: |
