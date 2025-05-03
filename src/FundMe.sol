@@ -4,11 +4,11 @@ pragma solidity ^0.8.18;
 // Note: The AggregatorV3Interface might be at a different location than what was in the video!
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import {PriceConverter} from "./PriceConverter.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol"; 
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 error NotOwner();
 
-contract FundMe is ReentrancyGuard{
+contract FundMe is ReentrancyGuard {
     using PriceConverter for uint256;
 
     mapping(address => uint256) private s_addressToAmountFunded;
@@ -34,7 +34,6 @@ contract FundMe is ReentrancyGuard{
     function getVersion() public view returns (uint256) {
         //AggregatorV3Interface priceFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
         return s_priceFeed.version();
-        
     }
 
     modifier onlyOwner() {
@@ -43,29 +42,23 @@ contract FundMe is ReentrancyGuard{
         _;
     }
 
-
-    function cheaperWithdraw() external  onlyOwner nonReentrant {
-
-
+    function cheaperWithdraw() external onlyOwner nonReentrant {
         uint256 contractBalance = address(this).balance;
         require(contractBalance > 0, "No funds available to withdraw");
 
         uint256 fundersLength = s_funders.length;
-        for(uint funderIndex = 0; funderIndex < fundersLength; funderIndex++){
+        for (uint256 funderIndex = 0; funderIndex < fundersLength; funderIndex++) {
             address funder = s_funders[funderIndex];
             s_addressToAmountFunded[funder] = 0;
         }
 
         s_funders = new address[](0);
 
-
         (bool callSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
         require(callSuccess, "Call failed");
-        
-    }   
+    }
 
-    function withdraw() external onlyOwner nonReentrant{
-
+    function withdraw() external onlyOwner nonReentrant {
         uint256 contractBalance = address(this).balance;
         require(contractBalance > 0, "No funds available to withdraw");
 
@@ -116,6 +109,4 @@ contract FundMe is ReentrancyGuard{
     function getOwner() external view returns (address) {
         return i_owner;
     }
-
-    
 }
