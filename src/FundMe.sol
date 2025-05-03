@@ -4,10 +4,11 @@ pragma solidity ^0.8.18;
 // Note: The AggregatorV3Interface might be at a different location than what was in the video!
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import {PriceConverter} from "./PriceConverter.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol"; 
 
 error NotOwner();
 
-contract FundMe {
+contract FundMe is ReentrancyGuard{
     using PriceConverter for uint256;
 
     mapping(address => uint256) private s_addressToAmountFunded;
@@ -43,7 +44,11 @@ contract FundMe {
     }
 
 
-    function cheaperWithdraw() public  onlyOwner {
+    function cheaperWithdraw() external  onlyOwner nonReentrant {
+
+
+        uint256 contractBalance = address(this).balance;
+        require(contractBalance > 0, "No funds available to withdraw");
 
         uint256 fundersLength = s_funders.length;
         for(uint funderIndex = 0; funderIndex < fundersLength; funderIndex++){
@@ -59,7 +64,11 @@ contract FundMe {
         
     }   
 
-    function withdraw() public onlyOwner {
+    function withdraw() external onlyOwner nonReentrant{
+
+        uint256 contractBalance = address(this).balance;
+        require(contractBalance > 0, "No funds available to withdraw");
+
         for (uint256 funderIndex = 0; funderIndex < s_funders.length; funderIndex++) {
             address funder = s_funders[funderIndex];
             s_addressToAmountFunded[funder] = 0;
