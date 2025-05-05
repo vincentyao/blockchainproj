@@ -4,6 +4,8 @@ pragma solidity ^0.8.18;
 import {Test, console} from "forge-std/Test.sol";
 import {FundMe} from "../../src/FundMe.sol";
 import {DeployFundMe} from "../../script/DefaultFundMe.s.sol";
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+
 
 contract FundMeTest is Test {
     FundMe fundme;
@@ -120,4 +122,36 @@ contract FundMeTest is Test {
         assert(address(fundme).balance == 0);
         assert(startingFundMeBalance + startingOwnerBalance == fundme.getOwner().balance);
     }
+
+//     function testFuzz(uint256 ethAmount) public {
+//     uint256 mockedPrice = 2000 * 10 ** 18; // 2000 USD (scaled by 10^18 to match Chainlink's price format)
+//     uint256 minimumEthRequired = (fundme.MINIMUM_USD() * 1e18) / mockedPrice;
+
+//     vm.assume(ethAmount >= minimumEthRequired && ethAmount < 10 ** 26); // ETH must be reasonable (avoid overflow)
+//     vm.deal(address(this), ethAmount);
+//     (bool success,) = address(fundme).call{value: ethAmount}("");
+//     assert(success);
+// }
+    function testFuzz(uint256 ethAmount) public {
+    // Fetch the actual price from the AggregatorV3Interface in the FundMe contract
+    AggregatorV3Interface priceFeed = fundme.getPriceFeed();
+    (, int256 price,,,) = priceFeed.latestRoundData();
+    uint256 actualPrice = uint256(price); // Convert to uint256 for calculations
+
+
+    // Calculate the minimum ETH required dynamically using the real price
+    uint256 minimumEthRequired = (fundme.MINIMUM_USD() * 1e18) / actualPrice;
+
+    // Assume the fuzzed input meets the contract's requirements
+    vm.assume(ethAmount >= minimumEthRequired && ethAmount < 10 ** 26); // Avoid overflow
+
+    // Provide the caller with enough ETH for the transaction
+    vm.deal(address(this), ethAmount);
+
+    // Call the fund function with the fuzzed ETH amount
+    (bool success,) = address(fundme).call{value: ethAmount}("");
+
+    // Assert that the fund function executes successfully
+    assert(success);
+}
 }
